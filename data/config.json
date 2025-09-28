@@ -1,0 +1,6 @@
+{
+  "defaultInterval": 300000,
+  "maxFeedsPerChannel": 10,
+  "enableWebDashboard": true,
+  "logLevel": "info"
+}
