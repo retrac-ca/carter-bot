@@ -8,15 +8,18 @@
  * License: AGPL-3.0
  */
 
+
 // Import required modules
 const { Client, Collection, GatewayIntentBits } = require('discord.js');
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
 
+
 // Import custom modules
 const logger = require('./utils/logger');
 const rssManager = require('./utils/rssManager');
+
 
 /**
  * Create a new Discord client instance
@@ -24,12 +27,13 @@ const rssManager = require('./utils/rssManager');
  */
 const client = new Client({
     intents: [
-        GatewayIntentBits.Guilds,              // Access to guild information
-        GatewayIntentBits.GuildMessages,       // Access to guild messages
-        GatewayIntentBits.MessageContent,      // Access to message content
-        GatewayIntentBits.GuildMembers         // Access to guild member info
+        GatewayIntentBits.Guilds,               // Access to guild information
+        GatewayIntentBits.GuildMessages,        // Access to guild messages
+        GatewayIntentBits.MessageContent,       // Access to message content
+        GatewayIntentBits.GuildMembers          // Access to guild member info
     ]
 });
+
 
 /**
  * Create collections to store commands and their cooldowns
@@ -37,6 +41,7 @@ const client = new Client({
  */
 client.commands = new Collection();
 client.cooldowns = new Collection();
+
 
 /**
  * Load all command files from the commands directory
@@ -79,9 +84,10 @@ function loadCommands() {
     }
 }
 
+
 /**
  * Load all event files from the events directory
- * Events handle Discord gateway events (ready, messageCreate, etc.)
+ * Events handle Discord gateway events (clientReady, messageCreate, etc.)
  */
 function loadEvents() {
     const eventsPath = path.join(__dirname, 'events');
@@ -97,16 +103,20 @@ function loadEvents() {
         try {
             const event = require(filePath);
             
+            // Fix: Map 'ready' event to 'clientReady'
+            // If your event handler is still using 'ready', update it here for backward compatibility
+            const normalizedEventName = event.name === 'ready' ? 'clientReady' : event.name;
+
             // Check if the event has required properties
-            if (event.name && event.execute) {
+            if (normalizedEventName && event.execute) {
                 // Register the event listener
                 if (event.once) {
-                    client.once(event.name, (...args) => event.execute(...args, client));
+                    client.once(normalizedEventName, (...args) => event.execute(...args, client));
                 } else {
-                    client.on(event.name, (...args) => event.execute(...args, client));
+                    client.on(normalizedEventName, (...args) => event.execute(...args, client));
                 }
                 
-                logger.info(`Loaded event: ${event.name}`);
+                logger.info(`Loaded event: ${normalizedEventName}`);
             } else {
                 logger.warn(`Event file ${file} is missing required properties (name, execute)`);
             }
@@ -115,6 +125,7 @@ function loadEvents() {
         }
     }
 }
+
 
 /**
  * Initialize the bot
@@ -142,6 +153,7 @@ async function initialize() {
     }
 }
 
+
 /**
  * Handle uncaught exceptions and unhandled promise rejections
  * This prevents the bot from crashing unexpectedly
@@ -150,9 +162,11 @@ process.on('uncaughtException', (error) => {
     logger.error('Uncaught Exception:', error);
 });
 
+
 process.on('unhandledRejection', (reason, promise) => {
     logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
 });
+
 
 /**
  * Graceful shutdown handling
@@ -170,6 +184,7 @@ process.on('SIGINT', () => {
     // Exit the process
     process.exit(0);
 });
+
 
 /**
  * Start the bot
@@ -196,6 +211,7 @@ async function startBot() {
         process.exit(1);
     }
 }
+
 
 // Start the bot
 startBot();

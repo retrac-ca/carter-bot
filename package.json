@@ -1,4 +1,12 @@
 {
+  "name": "retrac-project",
+  "version": "1.0.0",
+  "description": "Discord bot and automation tools for the RETRAC project.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
   "dependencies": {
     "discord.js": "^14.22.1",
     "dotenv": "^17.2.2",
